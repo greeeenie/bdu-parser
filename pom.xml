@@ -35,6 +35,11 @@
             <artifactId>selenium-java</artifactId>
             <version>4.29.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>LATEST</version>
+        </dependency>
     </dependencies>
 
 </project>
