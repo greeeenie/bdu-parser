@@ -1,50 +1,78 @@
 package org.example.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.Model.CweData;
+import org.example.Config.AppConfig;
+import org.example.Config.WebDriverManager;
+import org.example.Model.Bdu;
+import org.example.Model.Capec;
+import org.example.Model.Cwe;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 @Component
 @RequiredArgsConstructor
 public class Parser {
-    private final PageFetcher pageFetcher;
 
-    public List<String> extractBduIds() {
-        File input = new File("report.html");
-        try {
-            List<String> bduIds = new ArrayList<String>();
-            Document doc = Jsoup.parse(input);
-            Elements bdus = doc.getElementsByClass("bdu");
-            for (Element bdu : bdus) {
-                bduIds.add(bdu.html().substring(4, 14));
-            }
-            return bduIds;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private final WebDriverManager webDriverManager;
+    private final PageFetcher pageFetcher;
+    private final Extractor extractor;
+    private final UriBuilder uriBuilder;
+    private final AppConfig.AppProperties appProperties;
+
+    public List<Bdu> parseReport() {
+        Document doc = Jsoup.parse(appProperties.getReport());
+        return IntStream.range(0, extractor.extractBdusCount(doc))
+                .mapToObj(index -> {
+                            String bduId = extractor.extractBduId(doc, index);
+                            return Bdu.builder()
+                                    .id(bduId)
+                                    .name(extractor.extractBduName(doc, index))
+                                    .desc(extractor.extractBduDesc(doc, index))
+                                    .cwe(parseCwe(bduId))
+                                    .build();
+                        }
+                )
+                .peek(System.out::println)
+                .toList();
     }
 
-    public List<CweData> extractCwes(String bduId) {
+    private Cwe parseCwe(String bduId) {
+        Document bduDoc = getDocument(uriBuilder.bdu(bduId));
+        String cweId = extractor.extractCweId(bduDoc);
+        Document cweDoc = getDocument(uriBuilder.cwe(cweId));
+        List<String> capecIds = extractor.extractCapecIds(cweDoc);
+        return Cwe.builder()
+                .id(cweId)
+                .name(extractor.extractCweName(bduDoc))
+                .uri(extractor.extractCweUri(bduDoc))
+                .capecs(parseCapecs(capecIds, cweDoc))
+                .build();
+    }
 
-        StringBuilder fstecUrl = new StringBuilder("https://bdu.fstec.ru/vul/");
-        fstecUrl.append(bduId);
-        String fstecHtml =  pageFetcher.fetchPage(String.valueOf(fstecUrl));
+    private List<Capec> parseCapecs(List<String> capecIds, Document cweDoc) {
+        return IntStream.range(0, capecIds.size())
+                .mapToObj(index -> {
+                    String capecId = capecIds.get(index);
+                    String capecUri = extractor.extractCapecUri(cweDoc, index);
+                    if (capecUri == null) return null;
+                    Document capecDoc = getDocument(capecUri);
+                    return Capec.builder()
+                            .id(capecId)
+                            .uri(capecUri)
+                            .likelihood(extractor.extractCapecLikelihood(capecDoc))
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
-        Document doc = Jsoup.parse(fstecHtml);
-        Element cwe = doc.select("table").get(0).selectFirst("a");
-
-        List<CweData> cweData = new ArrayList<>();
-        cweData.add(new CweData(cwe.text(), cwe.attr("href")));
-
-        return cweData;
+    private Document getDocument(String uri) {
+        String html = pageFetcher.fetchPage(uri, webDriverManager);
+        return Jsoup.parse(html);
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class PageFetcher {
     private final WebDriverManager webDriverManager;
 
-    public String fetchPage(String url) {
+    public String fetchPage(String url, WebDriverManager webDriverManager) {
         WebDriver driver = webDriverManager.createWebDriver();
         try {
             driver.get(url);
