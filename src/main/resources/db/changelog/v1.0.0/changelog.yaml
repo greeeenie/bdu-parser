@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: 01_2025-02-28_init.sql
+      relativeToChangelogFile: true

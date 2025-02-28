@@ -1,9 +1,6 @@
 package org.example.Model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
@@ -11,7 +8,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class Cwe {
-
     private String id;
     private String name;
     private String uri;

@@ -1,6 +1,5 @@
 package org.example.Model;
 
-
 import lombok.*;
 
 @Builder
@@ -8,11 +7,11 @@ import lombok.*;
 @AllArgsConstructor
 public class Capec {
 
-    private final String id;
-    private final String name;
-    @Setter
+    private String id;
+    private String name;
     private String likelihood;
-    private final String uri;
+    private String uri;
+    private Cwe cwe;
 
     @Override
     public String toString() {

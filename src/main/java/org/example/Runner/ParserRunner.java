@@ -14,10 +14,6 @@ public class ParserRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-
         parser.parseReport();
-//        System.out.printf("Найдено %d уникальных BDU идентификаторов", bdus.size());
-//        System.out.println("");
-//        System.out.println(bdus);
     }
 }

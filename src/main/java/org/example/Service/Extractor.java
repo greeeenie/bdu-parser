@@ -1,6 +1,5 @@
 package org.example.Service;
 
-import org.apache.tomcat.util.buf.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -13,9 +12,7 @@ import java.util.stream.IntStream;
 public class Extractor {
 
     public int extractBdusCount(Document doc) {
-        return doc.getElementsByClass("vulnerabilitiesTbl")
-                .tagName("tbody")
-                .size();
+        return doc.getElementsByClass("bdu").size();
     }
 
     public String extractBduName(Document doc, int index) {
@@ -37,7 +34,6 @@ public class Extractor {
                 .text();
     }
 
-
     public String extractCweName(Document doc) {
         return doc.select("table")
                 .get(0)
@@ -46,28 +42,26 @@ public class Extractor {
     }
 
     public String extractCweId(Document doc) {
-        return doc.select("table")
-                .get(0)
-                .selectFirst("a")
-                .text()
-                .substring(4);
+        return doc.selectXpath("//a[contains(text(), 'CWE')]")
+                .first()
+                .text();
     }
 
     public String extractCweUri(Document doc) {
-        return doc.select("table")
-                .get(0)
-                .selectFirst("a")
+        return doc.selectXpath("//a[contains(text(), 'CWE')]")
+                .first()
                 .attr("href");
     }
 
     public List<String> extractCapecIds(Document doc) {
-        Elements table = doc.getElementById("Related_Attack_Patterns")
-                .getElementsByTag("a");
-        return IntStream.range(1, table.size())
-                .mapToObj(index -> table.get(index)
-                        .text()
-                        .substring(6))
-                .toList();
+        Element table = doc.getElementById("Related_Attack_Patterns");
+        if (table != null) {
+            return table.getElementsByTag("a")
+                    .stream()
+                    .map(Element::text)
+                    .toList();
+        }
+        return List.of();
     }
 
     public String extractCapecUri(Document doc, int index) {
