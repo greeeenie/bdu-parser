@@ -15,7 +15,12 @@ public class WebDriverManager {
         options.addArguments("--ignore-ssl-errors");
         options.addArguments("--headless");
 
-        System.setProperty("webdriver.chrome.driver", "selenium\\chromedriver.exe");
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            System.setProperty("webdriver.chrome.driver", "selenium\\chromedriver.exe");
+        } else if (os.contains("Mac")) {
+            System.setProperty("webdriver.chrome.driver", "selenium\\chromedriver");
+        }
         return new ChromeDriver(options);
     }
 }

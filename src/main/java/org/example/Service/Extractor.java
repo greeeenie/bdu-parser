@@ -1,5 +1,6 @@
 package org.example.Service;
 
+import org.apache.tomcat.util.buf.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -75,6 +76,19 @@ public class Extractor {
             return table.getElementsByTag("a")
                     .get(index + 1)
                     .attr("href");
+        }
+        return null;
+    }
+
+    public String extractCapecName(Document doc, int index) {
+        Element table = doc.getElementsByClass("noprint").get(3);
+        int colonIndex = table.getElementsByTag("h2")
+                .text()
+                .lastIndexOf(":");
+        if (table != null) {
+            return table.getElementsByTag("h2")
+                    .text()
+                    .substring(colonIndex + 2);
         }
         return null;
     }

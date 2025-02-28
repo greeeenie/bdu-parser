@@ -61,8 +61,10 @@ public class Parser {
                     String capecUri = extractor.extractCapecUri(cweDoc, index);
                     if (capecUri == null) return null;
                     Document capecDoc = getDocument(capecUri);
+                    String capecName = extractor.extractCapecName(capecDoc, index);
                     return Capec.builder()
                             .id(capecId)
+                            .name(capecName)
                             .uri(capecUri)
                             .likelihood(extractor.extractCapecLikelihood(capecDoc))
                             .build();
